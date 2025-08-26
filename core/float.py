@@ -156,10 +156,4 @@ class CustomFloat:
         # Each bit provides log10(2) ≈ 0.301 decimal digits of precision
         return int(mantissa_bits * math.log10(2))
 
-
-#Testing
-cf = CustomFloat(12.75, precision=128)
-print(cf.tuple)
-cf2 = CustomFloat((0, 258, 197307280624323449884158860510363648, 128))
-print(cf2)
     
