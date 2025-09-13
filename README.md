@@ -1,0 +1,1 @@
+Educational project with sample algorithms for arbitrary floating point arithmetic
