@@ -81,16 +81,3 @@ class Division:
             return CustomFloat((result_sign, 0, 0, prec))
         
         return CustomFloat((result_sign, result_exp_biased, result_mantissa, prec))
-
-if __name__ == "__main__":
-    # Test 4: Small numbers
-    g = CustomFloat(0.125, precision=64)
-    h = CustomFloat(0.25, precision=64)
-    result4 = Division.divide_basic(g, h, prec=64)
-    print(f"0.125 ÷ 0.25 = {result4.to_float()} (expected: 0.5)")
-    
-    # Test 5: High precision
-    i = CustomFloat(22.0, precision=128)
-    j = CustomFloat(7.0, precision=128)
-    result5 = Division.divide_basic(i, j, prec=128)
-    print(f"22.0 ÷ 7.0 = {result5.to_float()} (expected: 3.142857...)")

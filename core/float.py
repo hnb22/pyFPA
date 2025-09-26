@@ -10,10 +10,8 @@ class CustomFloat:
     def __init__(self, value: Union[float, int, str, Tuple[int, int, int, int]] = 0.0, 
                  precision: int = 64):
         if isinstance(value, tuple) and len(value) == 4:
-            # Direct tuple initialization: (sign, exponent, mantissa, precision)
             self._value = value
         else:
-            # Convert from standard types
             self._value = self._from_value(value, precision)
 
     def _from_value(self, value: Union[float, int, str], precision: int) -> Tuple[int, int, int, int]:
@@ -23,16 +21,12 @@ class CustomFloat:
         elif isinstance(value, int):
             value = float(value)
         
-        # Handle zero case
         if value == 0.0:
             return (0, 0, 0, precision)
+
+        exponent_bits = max(8, int(math.log2(precision)) + 2) 
+        mantissa_bits = precision - exponent_bits - 1
         
-        # For arbitrary precision, we allocate bits more flexibly
-        # Use logarithmic allocation: more precision = more mantissa bits
-        exponent_bits = max(8, int(math.log2(precision)) + 2)  # Dynamic exponent allocation
-        mantissa_bits = precision - exponent_bits - 1  # Reserve 1 bit for sign
-        
-        # Handle special cases (inf, nan) 
         if math.isinf(value):
             max_exp = (2 ** exponent_bits) - 1
             return (0 if value > 0 else 1, max_exp, 0, precision)
@@ -41,32 +35,22 @@ class CustomFloat:
             max_exp = (2 ** exponent_bits) - 1
             return (0, max_exp, 1, precision)
         
-        # Extract sign and work with absolute value
         sign = 0 if value >= 0 else 1
         abs_value = abs(value)
         
-        # Find the exponent using floor of log2
         exponent = int(math.floor(math.log2(abs_value)))
         
-        # Calculate the mantissa (fractional part after normalization)
-        # For arbitrary precision, we want exact representation
         mantissa_float = abs_value / (2.0 ** exponent) - 1.0
         
-        # Convert mantissa to integer representation with full precision
         mantissa = int(mantissa_float * (2 ** mantissa_bits))
         
-        # Apply bias to exponent for storage
-        # Use symmetric bias for arbitrary precision
         exponent_bias = (2 ** (exponent_bits - 1)) - 1
         biased_exponent = exponent + exponent_bias
         
-        # Handle exponent overflow/underflow
-        max_exp = (2 ** exponent_bits) - 2  # Reserve max value for inf/nan
+        max_exp = (2 ** exponent_bits) - 2 
         if biased_exponent >= max_exp:
-            # Overflow to infinity
             return (sign, max_exp + 1, 0, precision)
         elif biased_exponent <= 0:
-            # Underflow to zero (could implement subnormal numbers here)
             return (sign, 0, 0, precision)
         
         return (sign, biased_exponent, mantissa, precision)
@@ -103,11 +87,9 @@ class CustomFloat:
         if exp == 0 and mantissa == 0:
             return 0.0
         
-        # Calculate bit allocation (same as in _from_value)
         exponent_bits = max(8, int(math.log2(precision)) + 2)
         mantissa_bits = precision - exponent_bits - 1
         
-        # Handle special values
         max_exp = (2 ** exponent_bits) - 1
         if exp == max_exp:
             if mantissa == 0:
@@ -115,7 +97,6 @@ class CustomFloat:
             else:
                 return float('nan')
         
-        # Reconstruct the value
         exponent_bias = (2 ** (exponent_bits - 1)) - 1
         actual_exponent = exp - exponent_bias
         
@@ -153,7 +134,6 @@ class CustomFloat:
     def effective_precision(self) -> int:
         """Calculate the effective decimal precision of this representation."""
         _, _, mantissa_bits = self.get_bit_allocation()
-        # Each bit provides log10(2) ≈ 0.301 decimal digits of precision
         return int(mantissa_bits * math.log10(2))
 
     
